@@ -1,0 +1,37 @@
+#!/bin/bash
+
+VCLUSTER_NAME=$1;
+NAMESPACE_NAME=vcluster-$VCLUSTER_NAME;
+NODEPORT_NAME=$VCLUSTER_NAME-nodeport;
+
+cat nodeport.yaml \
+   | sed "s=@@@NODEPORT_NAME@@@=$NODEPORT_NAME=g" \
+   | sed "s=@@@NAMESPACE_NAME@@@=$NAMESPACE_NAME=g" \
+   | sed "s=@@@VCLUSTER_NAME@@@=$VCLUSTER_NAME=g" \
+   | kubectl apply -f -
+
+NODEPORT_PORT=$(kubectl get service $NODEPORT_NAME -n vcluster-w45 -o=jsonpath='{$.spec.ports[*].nodePort}');
+
+IFS=' ' read -ra node_addresses <<< $(kubectl get nodes \
+   -o=jsonpath='{$.items[*].status.addresses[?(@.type=="ExternalIP")].address}')
+
+function join_by {
+  local d=${1-} f=${2-}
+  if shift 2; then
+    printf %s "$f" "${@/#/$d}"
+  fi
+}
+
+
+cat vcluster_config.yaml \
+   | sed "s=@@@ADDRESSES@@@=$(join_by , $node_addresses)=g" \
+   > output/vcluster_config_mod.yaml
+
+
+vcluster create $VCLUSTER_NAME --upgrade -n $NAMESPACE_NAME --connect=false -f output/vcluster_config_mod.yaml;
+
+vcluster connect $VCLUSTER_NAME -n $NAMESPACE_NAME --kube-config output/temp_kubeconfig.yaml --update-current=false --server=https://${node_addresses[0]}
+
+cat output/temp_kubeconfig.yaml \
+    | sed "s=${node_addresses[0]}=${node_addresses[0]}:$NODEPORT_PORT=g" \
+    > output/kubeconfig.yaml
