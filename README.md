@@ -1,8 +1,10 @@
 # vcluster
+Setup vclusters from an existing cluster. Kubernetes api will be accessible via nodeport, which means the node IP must be a static/reserved IP.
+
 ```
 vcluster-setup <vcluster name>
 ```
-It uses a nodeport to make the api/control plane accessible, which means the node ip must be static.
+.
 
 The kubeconfig file generates in output/kubeconfig.yaml.
 
@@ -15,5 +17,4 @@ kubectl --kubeconfig output/kubeconfig.yaml get namespaces
 Source:
 https://www.vcluster.com/docs/operator/external-access#nodeport-service
 
-They do not tell you how to use the port; you have to add it to the kubeconfig after retrieving it.
-
+The link does not tell you how to use the port; you have to add it to the kubeconfig after retrieving it.
