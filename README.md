@@ -15,6 +15,6 @@ kubectl --kubeconfig output/kubeconfig.yaml get namespaces
 
 ## Notes
 Source:
-https://www.vcluster.com/docs/operator/external-access#nodeport-service
+https://www.vcluster.com/docs/using-vclusters/access#via-nodeport-service
 
 The link does not tell you how to use the port; you have to add it to the kubeconfig after retrieving it.
