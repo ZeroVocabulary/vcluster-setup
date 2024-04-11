@@ -4,13 +4,15 @@ VCLUSTER_NAME=$1;
 NAMESPACE_NAME=vcluster-$VCLUSTER_NAME;
 NODEPORT_NAME=$VCLUSTER_NAME-nodeport;
 
+kubectl create namespace $NAMESPACE_NAME
+
 cat nodeport.yaml \
    | sed "s=@@@NODEPORT_NAME@@@=$NODEPORT_NAME=g" \
    | sed "s=@@@NAMESPACE_NAME@@@=$NAMESPACE_NAME=g" \
    | sed "s=@@@VCLUSTER_NAME@@@=$VCLUSTER_NAME=g" \
    | kubectl apply -f -
 
-NODEPORT_PORT=$(kubectl get service $NODEPORT_NAME -n vcluster-w45 -o=jsonpath='{$.spec.ports[*].nodePort}');
+NODEPORT_PORT=$(kubectl get service $NODEPORT_NAME -n $NAMESPACE_NAME -o=jsonpath='{$.spec.ports[*].nodePort}');
 
 IFS=' ' read -ra node_addresses <<< $(kubectl get nodes \
    -o=jsonpath='{$.items[*].status.addresses[?(@.type=="ExternalIP")].address}')
