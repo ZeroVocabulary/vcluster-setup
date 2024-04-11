@@ -1,8 +1,8 @@
 #!/bin/bash
 
-VCLUSTER_NAME=$1;
-NAMESPACE_NAME=vcluster-$VCLUSTER_NAME;
-NODEPORT_NAME=$VCLUSTER_NAME-nodeport;
+VCLUSTER_NAME=$1
+NAMESPACE_NAME=vcluster-$VCLUSTER_NAME
+NODEPORT_NAME=$VCLUSTER_NAME-nodeport
 
 kubectl create namespace $NAMESPACE_NAME
 
@@ -12,7 +12,7 @@ cat nodeport.yaml \
    | sed "s=@@@VCLUSTER_NAME@@@=$VCLUSTER_NAME=g" \
    | kubectl apply -f -
 
-NODEPORT_PORT=$(kubectl get service $NODEPORT_NAME -n $NAMESPACE_NAME -o=jsonpath='{$.spec.ports[*].nodePort}');
+NODEPORT_PORT=$(kubectl get service $NODEPORT_NAME -n $NAMESPACE_NAME -o=jsonpath='{$.spec.ports[*].nodePort}')
 
 IFS=' ' read -ra node_addresses <<< $(kubectl get nodes \
    -o=jsonpath='{$.items[*].status.addresses[?(@.type=="ExternalIP")].address}')
@@ -26,11 +26,11 @@ function join_by {
 
 
 cat vcluster_config.yaml \
-   | sed "s=@@@ADDRESSES@@@=$(join_by , $node_addresses)=g" \
+   | sed "s=@@@ADDRESSES@@@=$(join_by , "${node_addresses[@]}")=g" \
    > output/vcluster_config_mod.yaml
 
 
-vcluster create $VCLUSTER_NAME --upgrade -n $NAMESPACE_NAME --connect=false -f output/vcluster_config_mod.yaml;
+vcluster create $VCLUSTER_NAME --upgrade -n $NAMESPACE_NAME --connect=false -f output/vcluster_config_mod.yaml
 
 vcluster connect $VCLUSTER_NAME -n $NAMESPACE_NAME --kube-config output/temp_kubeconfig.yaml --update-current=false --server=https://${node_addresses[0]}
 
