@@ -1,5 +1,5 @@
 # vcluster
-Setup vclusters from an existing cluster. Kubernetes api will be accessible via nodeport, which means the node IP must be a static/reserved IP.
+Setup vclusters from an existing cluster, and makes a kubeconfig file for access. Kubernetes api will be accessible via nodeport, which means the node IP must be a static/reserved IP.
 
 ```
 vcluster-setup <vcluster name>
